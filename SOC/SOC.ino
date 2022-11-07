@@ -133,7 +133,7 @@ void loop(){
   suhu = readSuhu();
   SOC();
   SOH();
- Serial.println ( (String) "DATA," + volt + "," + soc + "," + soc_batt + "," + soh);
+  Serial.println ( (String) "DATA," + volt + "," + soc + "," + soc_batt + "," + soh);
 
   Serial.println("Volt= " +String(volt,3));
   Serial.println("SOC= " +String(soc,3));
