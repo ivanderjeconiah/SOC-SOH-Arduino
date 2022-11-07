@@ -1,3 +1,7 @@
+#include "Filter.h"
+
+ExponentialFilter<float> FilteredGain(30, 0);
+ExponentialFilter<float> FilteredZero(30, 0);
 int currentAnalogInputPin = A1;             // Which pin to measure Current Value (A0 is reserved for LCD Display Shield Button function)
 int calibrationPin = A2;                    // Which pin to calibrate offset middle value
 float manualOffset = 0.00;                  // Key in value to manually offset the initial value
@@ -14,6 +18,7 @@ float currentMean ;                         /* to calculate the average value fr
 float RMSCurrentMean ;                      /* square roof of currentMean, in analog values */   
 float FinalRMSCurrent ; 
 float testData,testDataB;
+int a,b;
 
 void setup() {
   Serial.begin(9600);
@@ -22,7 +27,13 @@ void setup() {
 void loop() {
   testDataB=testData;
   while(currentSampleCount<=5000){
-    currentSampleRead = analogRead(currentAnalogInputPin)-analogRead(calibrationPin);                  /* read the sample value including offset value*/
+    a=analogRead(currentAnalogInputPin);
+    b=analogRead(calibrationPin);
+    FilteredGain.Filter(a);
+    FilteredZero.Filter(b);
+    a=FilteredGain.Current();
+    b=FilteredZero.Current();
+    currentSampleRead = a-b;                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + sq(currentSampleRead) ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
     currentLastSample = micros();
@@ -42,14 +53,16 @@ void loop() {
   Serial.print(FinalRMSCurrent,3);
   Serial.println(" A ");
 
-  Serial.print("RAW Voltage : ");
-  Serial.print(testData,2);
 
-  if(testData==testDataB){
-    Serial.println(" mV UNCHANGEABLE");
+  if(abs(testData-testDataB)>0.02){
+    Serial.print("RAW Voltage : ");
+    Serial.print(testData,2);
+    Serial.println(" mV");
   }
   else {
-    Serial.println(" mV");
+    Serial.print("RAW Voltage : ");
+    Serial.print(testDataB,2);
+    Serial.println(" mV UNCHANGEABLE");
   }
   
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
