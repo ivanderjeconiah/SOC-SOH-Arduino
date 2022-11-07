@@ -38,18 +38,18 @@ void loop() {
   //   FinalRMSCurrent =0; 
   // }
   
-  Serial.print(" The Current RMS value is: ");
+  Serial.print("The Current RMS value is: ");
   Serial.print(FinalRMSCurrent,3);
   Serial.println(" A ");
 
   Serial.print("RAW Voltage : ");
-  Serial.print(testData,3);
+  Serial.print(testData,2);
 
   if(testData==testDataB){
-    Serial.println(" V UNCHANGEABLE");
+    Serial.println(" mV UNCHANGEABLE");
   }
   else {
-    Serial.println(" v");
+    Serial.println(" mV");
   }
   
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
