@@ -21,7 +21,7 @@ void setup() {
 
 void loop() {
   testDataB=testData;
-  while(currentSampleCount<=4000){
+  while(currentSampleCount<=5000){
     currentSampleRead = analogRead(currentAnalogInputPin)-analogRead(calibrationPin);                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + sq(currentSampleRead) ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
