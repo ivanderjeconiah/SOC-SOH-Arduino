@@ -31,7 +31,7 @@ void loop() {
   RMSCurrentMean = sqrt(currentMean);                                                               /* square root of the average value*/
   FinalRMSCurrent = (((RMSCurrentMean /1023) *supplyVoltage) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
   testData=((RMSCurrentMean /1023) *supplyVoltage);
-  testData=0.17347358*testData+0.08501957;
+  //testData=0.17347358*testData+0.08501957;
   // if(FinalRMSCurrent <= (625/mVperAmpValue/100))                                                    /* if the current detected is less than or up to 1%, set current value to 0A*/
   // { 
   //   FinalRMSCurrent =0; 
