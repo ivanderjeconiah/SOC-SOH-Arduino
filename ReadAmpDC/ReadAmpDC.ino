@@ -36,7 +36,7 @@ void loop() {
     currentSampleRead = a-b;                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + sq(currentSampleRead) ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
-    currentLastSample = micros();
+    //currentLastSample = micros();
     delay(0.2);  
   }
   currentMean = currentSampleSum/currentSampleCount;                                                /* average accumulated analog values*/
@@ -54,7 +54,7 @@ void loop() {
   Serial.println(" A ");
 
 
-  if(abs(testData-testDataB)>0.02){
+  if(abs(testData-testDataB)>0.04){
     Serial.print("RAW Voltage : ");
     Serial.print(testData,2);
     Serial.println(" mV");
