@@ -13,13 +13,14 @@ float currentSampleCount = 0;               /* to count number of sample. */
 float currentMean ;                         /* to calculate the average value from all samples, in analog values*/ 
 float RMSCurrentMean ;                      /* square roof of currentMean, in analog values */   
 float FinalRMSCurrent ; 
-float testData;
+float testData,testDataB;
 
 void setup() {
   Serial.begin(9600);
 }
 
 void loop() {
+  testDataB=testData;
   while(currentSampleCount<=4000){
     currentSampleRead = analogRead(currentAnalogInputPin)-analogRead(calibrationPin);                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + sq(currentSampleRead) ;                                      /* accumulate total analog values for each sample readings*/
@@ -43,7 +44,14 @@ void loop() {
 
   Serial.print("RAW Voltage : ");
   Serial.print(testData,3);
-  Serial.println(" V");
+
+  if(testData==testDataB){
+    Serial.println(" V UNCHANGEABLE");
+  }
+  else {
+    Serial.println(" v");
+  }
+  
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0;     
 }
