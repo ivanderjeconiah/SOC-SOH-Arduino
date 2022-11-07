@@ -43,7 +43,7 @@ void loop() {
   RMSCurrentMean = sqrt(currentMean);                                                               /* square root of the average value*/
   FinalRMSCurrent = (((RMSCurrentMean /1023) *supplyVoltage) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
   testData=((RMSCurrentMean /1023) *supplyVoltage);
-  //testData=0.17347358*testData+0.08501957;
+  float final=0.14254115*testData-0.30554463;
   // if(FinalRMSCurrent <= (625/mVperAmpValue/100))                                                    /* if the current detected is less than or up to 1%, set current value to 0A*/
   // { 
   //   FinalRMSCurrent =0; 
@@ -64,6 +64,8 @@ void loop() {
     Serial.print(testDataB,2);
     Serial.println(" mV UNCHANGEABLE");
   }
+
+  Serial.println("Final : "+String(final,2)+" A");
   
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0;     
