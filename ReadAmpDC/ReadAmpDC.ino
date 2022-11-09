@@ -22,10 +22,10 @@ int a,b;
 
 void setup() {
   Serial.begin(9600);
+  testDataB=testData;
 }
 
 void loop() {
-  testDataB=testData;
   while(currentSampleCount<=5000){
     a=analogRead(currentAnalogInputPin);
     FilteredGain.Filter(a);
@@ -44,10 +44,11 @@ void loop() {
   Serial.println(" A ");
 
 
-  if(abs(testData-testDataB)>15){
+  if(abs(testData-testDataB)>5){
     Serial.print("RAW Voltage : ");
     Serial.print(testData,2);
     Serial.println(" mV");
+    testDataB=testData;
   }
   else {
     Serial.print("RAW Voltage : ");
