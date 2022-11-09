@@ -55,6 +55,7 @@ void loop() {
     Serial.println(" mV UNCHANGEABLE");
   }
   
+  Serial.println("CurrentMean in  ADC : " + String(currentMean));
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0;     
 }
