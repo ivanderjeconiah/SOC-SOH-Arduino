@@ -28,33 +28,23 @@ void loop() {
   testDataB=testData;
   while(currentSampleCount<=5000){
     a=analogRead(currentAnalogInputPin);
-    b=analogRead(calibrationPin);
     FilteredGain.Filter(a);
-    FilteredZero.Filter(b);
     a=FilteredGain.Current();
-    b=FilteredZero.Current();
-    currentSampleRead = a-b;                  /* read the sample value including offset value*/
-    currentSampleSum = currentSampleSum + sq(currentSampleRead) ;                                      /* accumulate total analog values for each sample readings*/
+    currentSampleRead = a;                  /* read the sample value including offset value*/
+    currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
-    //currentLastSample = micros();
-    delay(0.2);  
+    delay(0.1);  
   }
-  currentMean = currentSampleSum/currentSampleCount;                                                /* average accumulated analog values*/
-  RMSCurrentMean = sqrt(currentMean);                                                               /* square root of the average value*/
-  FinalRMSCurrent = (((RMSCurrentMean /1023) *supplyVoltage) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
-  testData=((RMSCurrentMean /1023) *supplyVoltage);
-  float final=0.14254115*testData-0.30554463;
-  // if(FinalRMSCurrent <= (625/mVperAmpValue/100))                                                    /* if the current detected is less than or up to 1%, set current value to 0A*/
-  // { 
-  //   FinalRMSCurrent =0; 
-  // }
+  currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
+  FinalRMSCurrent = ((((currentMean /1023) *supplyVoltage)-2500) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
+  testData=(((currentMean /1023) *supplyVoltage)-2500);
   
   Serial.print("The Current RMS value is: ");
   Serial.print(FinalRMSCurrent,3);
   Serial.println(" A ");
 
 
-  if(abs(testData-testDataB)>0.04){
+  if(abs(testData-testDataB)>15){
     Serial.print("RAW Voltage : ");
     Serial.print(testData,2);
     Serial.println(" mV");
@@ -64,8 +54,6 @@ void loop() {
     Serial.print(testDataB,2);
     Serial.println(" mV UNCHANGEABLE");
   }
-
-  Serial.println("Final : "+String(final,2)+" A");
   
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0;     
