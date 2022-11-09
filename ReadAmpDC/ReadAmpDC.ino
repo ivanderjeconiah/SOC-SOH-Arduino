@@ -36,27 +36,27 @@ void loop() {
     delay(0.1);  
   }
   currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
-  FinalRMSCurrent = ((((currentMean /1023.0) *supplyVoltage)) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
   testData=(((currentMean /1023.0) *supplyVoltage));
   
-  Serial.print("The Current RMS value is: ");
-  Serial.print(FinalRMSCurrent,3);
-  Serial.println(" A ");
 
-
-  if(abs(testData-testDataB)>5){
+  if(abs(testData-testDataB)>0.5){
+    FinalRMSCurrent = (testData/mVperAmpValue)- manualOffset;
     Serial.print("RAW Voltage : ");
     Serial.print(testData,2);
     Serial.println(" mV");
     testDataB=testData;
   }
   else {
+    FinalRMSCurrent = (testDataB/mVperAmpValue)- manualOffset;
     Serial.print("RAW Voltage : ");
     Serial.print(testDataB,2);
     Serial.println(" mV UNCHANGEABLE");
   }
   
   Serial.println("CurrentMean in  ADC : " + String(currentMean));
+  Serial.print("The Current RMS value is: ");
+  Serial.print(FinalRMSCurrent,3);
+  Serial.println(" A ");
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0;     
 }
