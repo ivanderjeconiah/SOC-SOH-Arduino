@@ -14,7 +14,7 @@ float currentSampleRead  = 0;               /* to read the value of a sample inc
 float currentLastSample  = 0;               /* to count time for each sample. Technically 1 milli second 1 sample is taken */
 float currentSampleSum   = 0;               /* accumulation of sample readings */
 float currentSampleCount = 0;               /* to count number of sample. */
-float currentMean ;                         /* to calculate the average value from all samples, in analog values*/ 
+int currentMean ;                         /* to calculate the average value from all samples, in analog values*/ 
 float RMSCurrentMean ;                      /* square roof of currentMean, in analog values */   
 float FinalRMSCurrent ; 
 float testData,testDataB;
@@ -30,14 +30,14 @@ void loop() {
     a=analogRead(currentAnalogInputPin);
     FilteredGain.Filter(a);
     a=FilteredGain.Current();
-    currentSampleRead = a;                  /* read the sample value including offset value*/
+    currentSampleRead = a-511;                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
     delay(0.1);  
   }
   currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
-  FinalRMSCurrent = ((((currentMean /1023) *supplyVoltage)-2500) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
-  testData=(((currentMean /1023) *supplyVoltage)-2500);
+  FinalRMSCurrent = ((((currentMean /1023.0) *supplyVoltage)) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
+  testData=(((currentMean /1023) *supplyVoltage));
   
   Serial.print("The Current RMS value is: ");
   Serial.print(FinalRMSCurrent,3);
