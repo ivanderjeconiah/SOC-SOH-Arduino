@@ -14,7 +14,7 @@ float currentSampleRead  = 0;               /* to read the value of a sample inc
 float currentLastSample  = 0;               /* to count time for each sample. Technically 1 milli second 1 sample is taken */
 float currentSampleSum   = 0;               /* accumulation of sample readings */
 float currentSampleCount = 0;               /* to count number of sample. */
-int currentMean ;                         /* to calculate the average value from all samples, in analog values*/ 
+float currentMean ;                         /* to calculate the average value from all samples, in analog values*/ 
 float RMSCurrentMean ;                      /* square roof of currentMean, in analog values */   
 float FinalRMSCurrent ; 
 float testData,testDataB;
@@ -37,7 +37,7 @@ void loop() {
   }
   currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
   FinalRMSCurrent = ((((currentMean /1023.0) *supplyVoltage)) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
-  testData=(((currentMean /1023) *supplyVoltage));
+  testData=(((currentMean /1023.0) *supplyVoltage));
   
   Serial.print("The Current RMS value is: ");
   Serial.print(FinalRMSCurrent,3);
