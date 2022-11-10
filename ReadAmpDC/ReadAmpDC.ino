@@ -19,6 +19,7 @@ float RMSCurrentMean ;                      /* square roof of currentMean, in an
 float FinalRMSCurrent ; 
 float testData,testDataB;
 int a,b;
+float FinalValue;
 
 void setup() {
   Serial.begin(9600);
@@ -41,6 +42,7 @@ void loop() {
 
   if(abs(testData-testDataB)>0.5){
     FinalRMSCurrent = (testData/mVperAmpValue)- manualOffset;
+    FinalValue=testData*0.16939131-0.13606419;
     Serial.print("RAW Voltage : ");
     Serial.print(testData,2);
     Serial.println(" mV");
@@ -48,6 +50,7 @@ void loop() {
   }
   else {
     FinalRMSCurrent = (testDataB/mVperAmpValue)- manualOffset;
+    FinalValue=testDataB*0.16939131-0.13606419;
     Serial.print("RAW Voltage : ");
     Serial.print(testDataB,2);
     Serial.println(" mV UNCHANGEABLE");
@@ -57,6 +60,7 @@ void loop() {
   Serial.print("The Current RMS value is: ");
   Serial.print(FinalRMSCurrent,3);
   Serial.println(" A ");
+  Serial.println("Regression Result : "+String(FinalValue,2));
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0;     
 }
