@@ -27,40 +27,5 @@ void setup() {
 }
 
 void loop() {
-  while(currentSampleCount<=5000){
-    a=analogRead(currentAnalogInputPin);
-    FilteredGain.Filter(a);
-    a=FilteredGain.Current();
-    currentSampleRead = a-511;                  /* read the sample value including offset value*/
-    currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
-    currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
-    delay(0.1);  
-  }
-  currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
-  testData=(((currentMean /1023.0) *supplyVoltage));
-  
-
-  if(abs(testData-testDataB)>0.5){
-    FinalRMSCurrent = (testData/mVperAmpValue)- manualOffset;
-    FinalValue=testData*0.16939131-0.13606419+0.081818182;
-    Serial.print("RAW Voltage : ");
-    Serial.print(testData,2);
-    Serial.println(" mV");
-    testDataB=testData;
-  }
-  else {
-    FinalRMSCurrent = (testDataB/mVperAmpValue)- manualOffset;
-    FinalValue=testDataB*0.16939131-0.13606419+0.081818182;
-    Serial.print("RAW Voltage : ");
-    Serial.print(testDataB,2);
-    Serial.println(" mV UNCHANGEABLE");
-  }
-  
-  Serial.println("CurrentMean in  ADC : " + String(currentMean));
-  Serial.print("The Current RMS value is: ");
-  Serial.print(FinalRMSCurrent,3);
-  Serial.println(" A ");
-  Serial.println("Regression Result : "+String(FinalValue,2));
-  currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
-  currentSampleCount=0;     
+ testDataB=testData;   
 }

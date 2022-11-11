@@ -1,5 +1,8 @@
 //#include<EEPROM.h>
+#include "Filter.h"
 
+ExponentialFilter<float> FilteredGain(30, 0);
+ExponentialFilter<float> FilteredZero(30, 0);
 float Qtot=180;
 float Qmax=180; //3AH in AMin
 float soc,soc_batt,soh;
@@ -8,11 +11,10 @@ float volt;
 float suhu;
 float bantubacaeeprom;
 
-
 int currentAnalogInputPin = A1;             // Which pin to measure Current Value (A0 is reserved for LCD Display Shield Button function)
 int calibrationPin = A2;                    // Which pin to calibrate offset middle value
 float manualOffset = 0.00;                  // Key in value to manually offset the initial value
-float mVperAmpValue = 12.5;                 // If using "Hall-Effect" Current Transformer, key in value using this formula: mVperAmp = maximum voltage range (in milli volt) / current rating of CT
+float mVperAmpValue = 6.25;                 // If using "Hall-Effect" Current Transformer, key in value using this formula: mVperAmp = maximum voltage range (in milli volt) / current rating of CT
                                                     // For example, a 20A Hall-Effect Current Transformer rated at 20A, 2.5V +/- 0.625V, mVperAmp will be 625 mV / 20A = 31.25mV/A 
                                                     // For example, a 50A Hall-Effect Current Transformer rated at 50A, 2.5V +/- 0.625V, mVperAmp will be 625 mV / 50A = 12.5 mV/A
 float supplyVoltage = 5000;                 // Analog input pin maximum supply voltage, Arduino Uno or Mega is 5000mV while Arduino Nano or Node MCU is 3300mV
@@ -24,6 +26,9 @@ float currentSampleCount = 0;               /* to count number of sample. */
 float currentMean ;                         /* to calculate the average value from all samples, in analog values*/ 
 float RMSCurrentMean ;                      /* square roof of currentMean, in analog values */   
 float FinalRMSCurrent ; 
+float testData,testDataB;
+int a;
+float FinalValue;
 
 float readVolt(){
   int value = 0;
@@ -50,26 +55,29 @@ float readSuhu(){
 }
 
 float readAmp(){
-  while(currentSampleCount<=4000){
-    currentSampleRead = analogRead(currentAnalogInputPin)-analogRead(calibrationPin);                  /* read the sample value including offset value*/
-    currentSampleSum = currentSampleSum + sq(currentSampleRead) ;                                      /* accumulate total analog values for each sample readings*/
+  while(currentSampleCount<=5000){
+    a=analogRead(currentAnalogInputPin);
+    FilteredGain.Filter(a);
+    a=FilteredGain.Current();
+    currentSampleRead = a-511;                  /* read the sample value including offset value*/
+    currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
-    currentLastSample = micros();
-    delay(0.2);  
+    delay(0.1);  
   }
-  currentMean = currentSampleSum/currentSampleCount;                                                /* average accumulated analog values*/
-  RMSCurrentMean = sqrt(currentMean);                                                               /* square root of the average value*/
-  FinalRMSCurrent = (((RMSCurrentMean /1023) *supplyVoltage) /mVperAmpValue)- manualOffset;         /* calculate the final RMS current*/
-  if(FinalRMSCurrent <= (625/mVperAmpValue/100))                                                    /* if the current detected is less than or up to 1%, set current value to 0A*/
-  { 
-    FinalRMSCurrent =0; 
+  currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
+  testData=(((currentMean /1023.0) *supplyVoltage));
+  
+
+  if(abs(testData-testDataB)>0.5){
+    FinalValue=testData*0.16939131-0.13606419+0.081818182;
+    testDataB=testData;
   }
-  Serial.print(" The Current RMS value is: ");
-  Serial.print(FinalRMSCurrent,3);
-  Serial.println(" A ");
+  else {
+    FinalValue=testDataB*0.16939131-0.13606419+0.081818182;
+  }
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
-  currentSampleCount=0;     
-  return FinalRMSCurrent;
+  currentSampleCount=0;   
+  return FinalValue;  
 }
 
 void SOC(){
@@ -122,6 +130,7 @@ void setup(){
   Serial.println ("CLEARDATA");
   Serial.println ("LABEL, Volt, SOC ,battSOC , SOH");
   OCV();
+  testDataB=testData;
  // EEPROM.get(0,bantubacaeeprom);
  // if(bantubacaeeprom!=0){
  //   Qtot=bantubacaeeprom;
