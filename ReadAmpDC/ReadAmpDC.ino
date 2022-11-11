@@ -42,7 +42,7 @@ void loop() {
 
   if(abs(testData-testDataB)>0.5){
     FinalRMSCurrent = (testData/mVperAmpValue)- manualOffset;
-    FinalValue=testData*0.16939131-0.13606419;
+    FinalValue=testData*0.16939131-0.13606419+0.081818182;
     Serial.print("RAW Voltage : ");
     Serial.print(testData,2);
     Serial.println(" mV");
