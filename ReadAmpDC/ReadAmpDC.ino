@@ -50,7 +50,7 @@ void loop() {
   }
   else {
     FinalRMSCurrent = (testDataB/mVperAmpValue)- manualOffset;
-    FinalValue=testDataB*0.16939131-0.13606419;
+    FinalValue=testDataB*0.16939131-0.13606419+0.081818182;
     Serial.print("RAW Voltage : ");
     Serial.print(testDataB,2);
     Serial.println(" mV UNCHANGEABLE");
