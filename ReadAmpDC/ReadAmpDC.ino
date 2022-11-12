@@ -27,5 +27,26 @@ void setup() {
 }
 
 void loop() {
- testDataB=testData;   
+ while(currentSampleCount<=5000){
+    a=analogRead(currentAnalogInputPin);
+    FilteredGain.Filter(a);
+    a=FilteredGain.Current();
+    currentSampleRead = a-511;                  /* read the sample value including offset value*/
+    currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
+    currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
+    delay(0.1);  
+  }
+  currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
+  testData=(((currentMean /1023.0) *supplyVoltage));
+  
+
+  if(abs(testData-testDataB)>0.5){
+    FinalValue=testData*0.16939131-0.13606419+0.081818182;
+    testDataB=testData;
+  }
+  else {
+    FinalValue=testDataB*0.16939131-0.13606419+0.081818182;
+  }
+  currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
+  currentSampleCount=0; 
 }

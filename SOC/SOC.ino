@@ -1,5 +1,8 @@
 //#include<EEPROM.h>
 #include "Filter.h"
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd (0x27,20,4);
 
 ExponentialFilter<float> FilteredGain(30, 0);
 ExponentialFilter<float> FilteredZero(30, 0);
@@ -7,9 +10,10 @@ float Qtot=180;
 float Qmax=180; //3AH in AMin
 float soc,soc_batt,soh;
 float ampb,amp;
-float volt;
-float suhu;
+float volt,voltB;
+float suhu,suhuB;
 float bantubacaeeprom;
+float ampereB;
 
 int currentAnalogInputPin = A1;             // Which pin to measure Current Value (A0 is reserved for LCD Display Shield Button function)
 int calibrationPin = A2;                    // Which pin to calibrate offset middle value
@@ -29,17 +33,24 @@ float FinalRMSCurrent ;
 float testData,testDataB;
 int a;
 float FinalValue;
+float inVB,inV;
 
 float readVolt(){
+  inVB=inV;
   int value = 0;
   float voltage = 0.0;
-  float inV = 0.0;
   float R1 = 30000.0;
   float R2 = 7500.0;
   value = analogRead(A0);
   voltage = value * (5.0/1023.0);
   inV = voltage / (R2/(R2+R1));
-  return inV;  
+  if(abs(inVB-inV)>0.05){
+    return inV;
+  }
+  else{
+    inV=inVB;
+    return inVB; 
+  }
 }
 
 float readSuhu(){
@@ -51,7 +62,6 @@ float readSuhu(){
   vout= adc /1023.0 *5 ;
   tempc = vout * 100;
   return tempc;
- 
 }
 
 float readAmp(){
@@ -124,6 +134,55 @@ void OCV(){
   }
 }
 
+
+void cetak(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(volt,2);
+  lcd.print("V");
+  if(amp<100){
+    lcd.setCursor(13,0);
+    lcd.print(amp,3);   
+    lcd.print("A");
+  }
+  else {
+    lcd.setCursor(13,0);
+    lcd.print(amp,2);
+    lcd.print("A");    
+  }
+  lcd.setCursor(0,1);
+  lcd.print("SOC :");
+  lcd.print(soc_batt,2);
+  lcd.print("%");
+
+  lcd.setCursor(0,2);
+  lcd.print("SOH :");
+  lcd.print(soh,2);
+  lcd.print("%");
+
+  lcd.setCursor(0,3);
+  lcd.print("TEMP:");
+  lcd.print(suhu,1);
+  lcd.print("C");
+
+  if(soh>90){
+    lcd.setCursor(13,2);
+    lcd.print("SANGAT");
+    lcd.setCursor(14,3);
+    lcd.print("BAIK");
+  }
+  else if (soh>20){
+    lcd.setCursor(14,2);
+    lcd.print("BAIK");
+  }
+  else{
+    lcd.setCursor(13,2);
+    lcd.print("buruk");
+  }  
+
+  lcd.display();
+  
+}
 void setup(){
   Serial.begin(9600);
   ampb=amp;
@@ -131,6 +190,9 @@ void setup(){
   Serial.println ("LABEL, Volt, SOC ,battSOC , SOH");
   OCV();
   testDataB=testData;
+  lcd.init();
+  lcd.backlight();
+  lcd.clear();
  // EEPROM.get(0,bantubacaeeprom);
  // if(bantubacaeeprom!=0){
  //   Qtot=bantubacaeeprom;
@@ -142,14 +204,18 @@ void loop(){
   suhu = readSuhu();
   SOC();
   SOH();
+
+  
   Serial.println ( (String) "DATA," + volt + "," + soc + "," + soc_batt + "," + soh);
 
   Serial.println("Volt= " +String(volt,3));
   Serial.println("SOC= " +String(soc,3));
   Serial.println("Batt SOC= " +String(soc_batt,3));
   Serial.println("SOH= " +String(soh,3));
-    Serial.println("suhu= " +String(suhu,3));
+  Serial.println("suhu= " +String(suhu,3));
   Serial.println("================================");
+
+  cetak();
   delay(1000);
 
 }
