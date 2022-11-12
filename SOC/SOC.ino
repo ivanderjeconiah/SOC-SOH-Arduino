@@ -209,6 +209,7 @@ void loop(){
   Serial.println ( (String) "DATA," + volt + "," + soc + "," + soc_batt + "," + soh);
 
   Serial.println("Volt= " +String(volt,3));
+  Serial.println("Arus= " +String(Amp,3));
   Serial.println("SOC= " +String(soc,3));
   Serial.println("Batt SOC= " +String(soc_batt,3));
   Serial.println("SOH= " +String(soh,3));
