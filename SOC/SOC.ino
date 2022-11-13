@@ -1,10 +1,10 @@
 #include<EEPROM.h>
-//#include "Filter.h"
+#include "Filter.h"
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd (0x27,20,4);
 
-//ExponentialFilter<float> FilteredGain(30, 0);
+ExponentialFilter<float> FilteredGain(40, 0);
 float Qtot=234000;
 float Qmax=234000; //65AH in AMin
 float soc,soc_batt,soh,sohb;
@@ -64,8 +64,8 @@ float readSuhu(){
 float readAmp(){
   while(currentSampleCount<=5000){
     a=analogRead(currentAnalogInputPin);
-    //FilteredGain.Filter(a);
-    //a=FilteredGain.Current();
+    FilteredGain.Filter(a);
+    a=FilteredGain.Current();
     currentSampleRead = a-511;                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
