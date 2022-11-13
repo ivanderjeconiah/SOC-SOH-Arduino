@@ -1,22 +1,19 @@
-//#include<EEPROM.h>
-#include "Filter.h"
+#include<EEPROM.h>
+//#include "Filter.h"
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd (0x27,20,4);
 
-ExponentialFilter<float> FilteredGain(30, 0);
-ExponentialFilter<float> FilteredZero(30, 0);
-float Qtot=180;
-float Qmax=180; //3AH in AMin
-float soc,soc_batt,soh;
+//ExponentialFilter<float> FilteredGain(30, 0);
+float Qtot=234000;
+float Qmax=234000; //65AH in AMin
+float soc,soc_batt,soh,sohb;
 float ampb,amp;
-float volt,voltB;
-float suhu,suhuB;
+float volt;
+float suhu;
 float bantubacaeeprom;
-float ampereB;
 
 int currentAnalogInputPin = A1;             // Which pin to measure Current Value (A0 is reserved for LCD Display Shield Button function)
-int calibrationPin = A2;                    // Which pin to calibrate offset middle value
 float manualOffset = 0.00;                  // Key in value to manually offset the initial value
 float mVperAmpValue = 6.25;                 // If using "Hall-Effect" Current Transformer, key in value using this formula: mVperAmp = maximum voltage range (in milli volt) / current rating of CT
                                                     // For example, a 20A Hall-Effect Current Transformer rated at 20A, 2.5V +/- 0.625V, mVperAmp will be 625 mV / 20A = 31.25mV/A 
@@ -67,8 +64,8 @@ float readSuhu(){
 float readAmp(){
   while(currentSampleCount<=5000){
     a=analogRead(currentAnalogInputPin);
-    FilteredGain.Filter(a);
-    a=FilteredGain.Current();
+    //FilteredGain.Filter(a);
+    //a=FilteredGain.Current();
     currentSampleRead = a-511;                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
     currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
@@ -90,24 +87,35 @@ float readAmp(){
   return FinalValue;  
 }
 
+
 void SOC(){
   amp=readAmp();
+  if((amp>=-0.06)&& (amp<=0.06)){
+    amp=0;
+  }
   Serial.println("Amp= " +String(amp,3));
   soc=soc+(1*((amp+ampb)/2)); 
   soc_batt=(soc*100.0)/Qtot;
-  if((amp==ampb) && (amp<=0.0)){
+  if((amp==ampb) && (amp==0.0)){
     Qtot=soc;
-   // EEPROM.put(0,Qtot);
+    // EEPROM.put(0,Qtot);
   }
   ampb=amp;
+
 }
 
 void SOH(){
+  sohb=soh;
   soh=(Qtot*100.0)/Qmax;
+  if(sohb!=soh){  
+    EEPROM.put(0,soh);
+   }
 }
 
 void OCV(){
-  int teg=readVolt();
+  float teg=readVolt();
+  volt=teg;
+  Serial.println("TEGANGAN BRO: "+String(teg));
   if(teg>12.7){
     soc=100;
   }
@@ -132,6 +140,9 @@ void OCV(){
   else{
     soc=0;
   }
+
+  soc=(soc* Qtot)/100.0;
+  Serial.println("HASIL OCV: "+String(soc));
 }
 
 
@@ -181,9 +192,12 @@ void cetak(){
   }  
 
   lcd.display();
-  
 }
+
+void(* resetFunc) (void) = 0;
+
 void setup(){
+  pinMode(2,INPUT_PULLUP);
   Serial.begin(9600);
   ampb=amp;
   Serial.println ("CLEARDATA");
@@ -193,30 +207,55 @@ void setup(){
   lcd.init();
   lcd.backlight();
   lcd.clear();
- // EEPROM.get(0,bantubacaeeprom);
- // if(bantubacaeeprom!=0){
- //   Qtot=bantubacaeeprom;
- // }
-}
-
-void loop(){
-  volt=readVolt();
-  suhu = readSuhu();
-  SOC();
-  SOH();
+  EEPROM.get(0,bantubacaeeprom);
+  if(isnan(bantubacaeeprom)){
+    EEPROM.put(0,100.00);
+    soh=100;
+    Serial.println(String(1)+" "+String("write to eeprom"));
+  }
+  else{
+    if(bantubacaeeprom<100.00){
+      soh=bantubacaeeprom;
+      Qtot=(bantubacaeeprom*Qmax)/100.0;  
+      Serial.println(String(3)+" "+String(bantubacaeeprom,2)+" "+String(Qtot,3));    
+    
+    }
+    else{
+      soh=100;
+      Serial.println(String(4)+" "+String(bantubacaeeprom,2));
+    }
+  }
 
   
-  Serial.println ( (String) "DATA," + volt + "," + soc + "," + soc_batt + "," + soh);
+}
 
-  Serial.println("Volt= " +String(volt,3));
-  Serial.println("Arus= " +String(Amp,3));
-  Serial.println("SOC= " +String(soc,3));
-  Serial.println("Batt SOC= " +String(soc_batt,3));
-  Serial.println("SOH= " +String(soh,3));
-  Serial.println("suhu= " +String(suhu,3));
-  Serial.println("================================");
 
-  cetak();
-  delay(1000);
+unsigned long waktuTerakhir=1000;
+void loop(){
+  if(digitalRead(2)==LOW){
+    EEPROM.put(0,100.00);  
+    Serial.println("RESET EEPROM TO 100");
+    resetFunc();
+  }  
+  if(abs(millis()-waktuTerakhir)>=1000){
+    waktuTerakhir=millis();
+    volt=readVolt();
+    suhu = readSuhu();
+    SOC();
+    SOH();
+    
+    //Serial.println ( (String) "DATA," + volt + "," + soc + "," + soc_batt + "," + soh);
 
+    Serial.println("Volt= " +String(volt,3));
+    Serial.println("Arus= " +String(amp,3));
+    Serial.println("SOC= " +String(soc,3));
+    Serial.println("Batt SOC= " +String(soc_batt,3));
+    Serial.println("SOH= " +String(soh,3));
+    Serial.println("suhu= " +String(suhu,3));
+    Serial.println("================================");
+
+    cetak();
+    //waktuTerakhir=millis();
+  }
+  delay(100);
 }
