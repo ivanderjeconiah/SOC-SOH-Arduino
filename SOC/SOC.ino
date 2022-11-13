@@ -152,12 +152,12 @@ void cetak(){
   lcd.print(volt,2);
   lcd.print("V");
   if(amp<100){
-    lcd.setCursor(13,0);
+    lcd.setCursor(12,0);
     lcd.print(amp,3);   
     lcd.print("A");
   }
   else {
-    lcd.setCursor(13,0);
+    lcd.setCursor(12,0);
     lcd.print(amp,2);
     lcd.print("A");    
   }
