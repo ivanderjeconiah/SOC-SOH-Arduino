@@ -1,7 +1,7 @@
 #include "Filter.h"
 
-ExponentialFilter<float> FilteredGain(30, 0);
-ExponentialFilter<float> FilteredZero(30, 0);
+ExponentialFilter<float> FilteredGain(40, 0);
+ExponentialFilter<float> FilteredZero(40, 0);
 int currentAnalogInputPin = A1;             // Which pin to measure Current Value (A0 is reserved for LCD Display Shield Button function)
 int calibrationPin = A2;                    // Which pin to calibrate offset middle value
 float manualOffset = 0.00;                  // Key in value to manually offset the initial value
@@ -28,25 +28,28 @@ void setup() {
 
 void loop() {
  while(currentSampleCount<=5000){
-    a=analogRead(currentAnalogInputPin);
-    FilteredGain.Filter(a);
+    float Raw=analogRead(currentAnalogInputPin);
+    FilteredGain.Filter(Raw);
     a=FilteredGain.Current();
     currentSampleRead = a-511;                  /* read the sample value including offset value*/
     currentSampleSum = currentSampleSum + currentSampleRead ;                                      /* accumulate total analog values for each sample readings*/
-    currentSampleCount = currentSampleCount + 1;                                                       /* to count and move on to the next following count */  
+    currentSampleCount = currentSampleCount + 1; 
+    Serial.print(Raw);
+    Serial.print(" ");
+    Serial.println(a);                                                   /* to count and move on to the next following count */  
     delay(0.1);  
   }
-  currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
-  testData=(((currentMean /1023.0) *supplyVoltage));
+  // currentMean = (currentSampleSum/currentSampleCount);                                                /* average accumulated analog values*/                                                              /* square root of the average value*/
+  // testData=(((currentMean /1023.0) *supplyVoltage));
   
 
-  if(abs(testData-testDataB)>0.5){
-    FinalValue=testData*0.16939131-0.13606419+0.081818182;
-    testDataB=testData;
-  }
-  else {
-    FinalValue=testDataB*0.16939131-0.13606419+0.081818182;
-  }
+  // if(abs(testData-testDataB)>0.5){
+  //   FinalValue=testData*0.16939131-0.13606419+0.081818182;
+  //   testDataB=testData;
+  // }
+  // else {
+  //   FinalValue=testDataB*0.16939131-0.13606419+0.081818182;
+  // }
   currentSampleSum =0;                                                                              /* to reset accumulate sample values for the next cycle */
   currentSampleCount=0; 
 }
